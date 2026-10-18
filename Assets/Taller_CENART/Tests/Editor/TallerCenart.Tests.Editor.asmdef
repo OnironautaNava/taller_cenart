@@ -1,6 +1,7 @@
 {
     "name": "TallerCenart.Tests.Editor",
     "references": [
+        "TallerCenart",
         "Unity.XR.Interaction.Toolkit",
         "Unity.XR.CoreUtils",
         "UnityEngine.TestRunner",

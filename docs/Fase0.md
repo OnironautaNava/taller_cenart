@@ -26,6 +26,40 @@ Every floor tile carries a `TeleportationArea` and a collider whose top sits at 
 
 To re-theme the room, change the material on a zone's floor tiles or walls (for example the `Generic_*` materials in `Assets/Synty/PolygonGeneric/Materials/`), or swap the statues and props for other Synty prefabs. Keep a collider under every walkable surface and keep the `TeleportationArea` on floors.
 
+## First puzzle: socket (RF-02)
+
+`Challenge_01` in Zone A. Take the gem from the east shelf, place it on the pedestal: the chest opens and a key appears. The tennis ball next to the gem is a decoy for practicing grab, release and throw; the socket rejects it.
+
+| Object (under `Environment/Zone_A_Entrance`) | Components | Role |
+|---|---|---|
+| `Challenge_01/Slot/Socket` | `XRSocketInteractor`, trigger `SphereCollider` (r 0.15) | Accepts only the `PuzzlePiece` interaction layer. |
+| `Piece_Gem` | `XRGrabInteractable` (layers `Default` + `PuzzlePiece`, Throw On Detach), `Rigidbody`, `BoxCollider`, `Respawn` | The piece. |
+| `Decoy_Ball` | Same, layers `Default` only | Throwable; cannot enter the socket. |
+| `Puzzle_01` | `PuzzleCondition` (Required Count 1), `Reveal` (Targets: `Reward_Key`) | Puzzle logic. |
+| `Chest_01` | `Door` (Target: lid, Open Rotation −110, 0, 0, Duration 1) | Synty chest whose lid opens. |
+| `Reward_Key` | inactive Synty key | Revealed when solved. |
+
+`PuzzlePiece` is interaction layer 1 in `Assets/XRI/Settings/Resources/InteractionLayerSettings.asset`.
+
+### Inspector wiring (rebuild without code)
+
+1. `Socket` → XR Socket Interactor → Interaction Layer Mask: only `PuzzlePiece`.
+2. Socket → Interactor Events → **Select Entered**: `Puzzle_01` → `PuzzleCondition.Signal`.
+3. Socket → **Select Exited**: `Puzzle_01` → `PuzzleCondition.Unsignal`.
+4. `Puzzle_01` → PuzzleCondition → **On Solved**: `Chest_01` → `Door.Open`, and `Puzzle_01` → `Reveal.Show`.
+5. Piece: add `XR Grab Interactable` (it adds the `Rigidbody`), a collider, and include `PuzzlePiece` in its Interaction Layer Mask. Add `Respawn`.
+
+## Reusable components (`Assets/Taller_CENART/Scripts`)
+
+| Component | Inspector fields | Callable from events | Behavior |
+|---|---|---|---|
+| `PuzzleCondition` | Required Count (≥ 1), On Solved | `Signal()`, `Unsignal()` | Each `Signal` adds 1, each `Unsignal` removes 1 (never below 0). On Solved fires **once**, when the count first reaches Required Count; after that it stays solved and ignores further calls. Required Count < 1 logs an error and never solves. |
+| `Door` | Target (empty = itself), Open Offset, Open Rotation, Duration (0 = instant) | `Open()`, `Close()`, `Toggle()` | Moves/rotates Target from its starting local pose to start + offset/rotation. Rotation pivots on Target's origin. |
+| `Reveal` | Targets | `Show()`, `Hide()` | Activates/deactivates Targets. Leave them inactive to start hidden. No targets or an empty slot logs a warning naming the object. |
+| `Respawn` | Min Height (default −2) | `ResetPose()` | Returns the object to its start pose and stops it when it falls below Min Height (for example, thrown over a wall). |
+
+For N inputs (for example, three sockets), set Required Count to N and wire each source to the same `PuzzleCondition`.
+
 ## Simulator
 
 `Assets/XRI/Settings/Resources/XRDeviceSimulatorSettings.asset` auto-instantiates the XR Interaction Simulator (`Assets/Samples/XR Interaction Toolkit/3.6.1/XR Interaction Simulator/`) **in the Editor only**. Player builds and a real headset path are unaffected; the scene contains no simulator object.
@@ -45,10 +79,12 @@ Controls (from the sample's input actions):
 
 ## Verification
 
-- `Assets/Taller_CENART/Tests/Editor/Fase0SceneTests.cs` (EditMode): simulator configured editor-only, one rig and one manager, both zones have teleportable floors, three pedestal instances, no missing scripts.
+- `Assets/Taller_CENART/Tests/Editor/Fase0SceneTests.cs` (EditMode): simulator configured editor-only, one rig and one manager, both zones have teleportable floors, three pedestal instances, no missing scripts, socket puzzle wiring.
+- `Assets/Taller_CENART/Tests/Editor/PuzzleComponentTests.cs` (EditMode): PuzzleCondition event count and single solve, invalid count, Door poses, Reveal targets and warnings.
 - Play Mode (twice, stop and re-enter): simulator instantiated with simulated HMD and both controllers, rig stays at y = 0, no console errors. XRI logs one warning about haptic capabilities of the simulated controller; it is expected.
 
 ## Pending (needs a person)
 
+- Socket puzzle by hand in the simulator: grab, release and throw the ball and gem, place the gem, retry. Record how long another person takes to rebuild the wiring from the steps above (Discovery Inspector experiment).
 - Walk the room with the keyboard/mouse guide above and confirm move, snap turn, teleport and grab feel right.
 - Lab compatibility (#7): open this scene on a lab PC and record Editor/package versions, simulator result and blockers. Unity 6000.6.5f1 is not yet confirmed by the lab.
