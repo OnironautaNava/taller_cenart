@@ -112,3 +112,12 @@ InitTestScene*.unity*
 
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
+
+# Agent tooling scaffolding — local per machine, regenerable, not Unity project content.
+# .agents/skills/ holds the actual skill copies; skills/ and .claude/skills/ are symlinks into it.
+# Restore with: unity skill install <client> --local   (and gentle-ai skill-registry refresh)
+/.agents/
+/.claude/
+/.atl/
+/skills/
+/skills-lock.json
