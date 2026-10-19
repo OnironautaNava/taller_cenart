@@ -5,7 +5,10 @@
         "Unity.XR.Interaction.Toolkit",
         "Unity.XR.CoreUtils",
         "UnityEngine.TestRunner",
-        "UnityEditor.TestRunner"
+        "UnityEditor.TestRunner",
+        "Unity.InputSystem",
+        "Unity.TextMeshPro",
+        "UnityEngine.UI"
     ],
     "includePlatforms": ["Editor"],
     "overrideReferences": true,

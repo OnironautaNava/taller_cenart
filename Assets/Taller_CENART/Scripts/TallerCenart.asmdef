@@ -1,6 +1,8 @@
 {
     "name": "TallerCenart",
     "rootNamespace": "TallerCenart",
-    "references": [],
+    "references": [
+        "Unity.InputSystem"
+    ],
     "autoReferenced": true
 }

@@ -108,6 +108,125 @@ public class Fase0SceneTests
         AssertCalls(condition.OnSolved, fx, nameof(ParticleSystem.Play));
     }
 
+    [Test]
+    public void LocomotionIsTeleportAndSnapTurnOnly()
+    {
+        // ControllerInputActionManager is a sample type, so read its serialized fields.
+        var managers = Object.FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None)
+            .Where(m => m.GetType().Name == "ControllerInputActionManager").ToArray();
+        Assert.AreEqual(2, managers.Length);
+        foreach (var m in managers)
+        {
+            var so = new SerializedObject(m);
+            Assert.IsFalse(so.FindProperty("m_SmoothMotionEnabled").boolValue, m.name + " must not use continuous move");
+            Assert.IsFalse(so.FindProperty("m_SmoothTurnEnabled").boolValue, m.name + " must use snap turn");
+        }
+    }
+
+    [Test]
+    public void DoorNeedsKeyInLockAndCode()
+    {
+        var condition = GameObject.Find("Environment/Doorway_AB/Puzzle_Door").GetComponent<PuzzleCondition>();
+        var socket = GameObject.Find("Environment/Doorway_AB/KeyLock/Socket").GetComponent<XRSocketInteractor>();
+        var codeLock = GameObject.Find("Environment/Doorway_AB/Keypad").GetComponent<CodeLock>();
+        var door = GameObject.Find("Environment/Doorway_AB/Door_AB").GetComponent<Door>();
+        var key = GameObject.Find("Environment/Zone_A_Entrance").transform.Find("Reward_Key").GetComponent<XRGrabInteractable>();
+        var gem = GameObject.Find("Environment/Zone_A_Entrance/Piece_Gem").GetComponent<XRGrabInteractable>();
+
+        Assert.AreEqual(2, condition.requiredCount, "key and code are two different conditions");
+        var keyLayer = InteractionLayerMask.GetMask("Key");
+        Assert.AreNotEqual(0, keyLayer, "Key interaction layer must exist");
+        Assert.AreEqual(keyLayer, socket.interactionLayers.value, "lock accepts only the key");
+        Assert.AreNotEqual(0, key.interactionLayers.value & keyLayer);
+        Assert.AreEqual(0, gem.interactionLayers.value & keyLayer, "gem must not open the lock");
+        Assert.IsNotNull(key.GetComponent<Respawn>());
+        Assert.IsTrue(System.Text.RegularExpressions.Regex.IsMatch(codeLock.code, "^[0-9]+$"));
+
+        AssertCalls(socket.selectEntered, condition, nameof(PuzzleCondition.Signal));
+        AssertCalls(socket.selectExited, condition, nameof(PuzzleCondition.Unsignal));
+        AssertCalls(codeLock.OnSolved, condition, nameof(PuzzleCondition.Signal));
+        AssertCalls(condition.OnSolved, door, nameof(Door.Open));
+    }
+
+    [Test]
+    public void KeypadButtonsEnterEveryDigitOnce()
+    {
+        var codeLock = GameObject.Find("Environment/Doorway_AB/Keypad").GetComponent<CodeLock>();
+        var digits = new System.Collections.Generic.List<int>();
+        foreach (var button in codeLock.GetComponentsInChildren<XRSimpleInteractable>())
+        {
+            var evt = button.selectEntered;
+            Assert.AreEqual(1, evt.GetPersistentEventCount(), button.name);
+            Assert.AreEqual(codeLock, evt.GetPersistentTarget(0), button.name);
+            if (evt.GetPersistentMethodName(0) == nameof(CodeLock.Clear))
+                continue;
+            Assert.AreEqual(nameof(CodeLock.Press), evt.GetPersistentMethodName(0), button.name);
+            var digit = new SerializedObject(button).FindProperty("m_SelectEntered.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_IntArgument").intValue;
+            Assert.AreEqual(button.name, "Key_" + digit);
+            digits.Add(digit);
+            Assert.IsNotNull(button.GetComponent<UnityEngine.XR.Interaction.Toolkit.Filtering.XRPokeFilter>(), button.name + " supports poke");
+        }
+        CollectionAssert.AreEquivalent(Enumerable.Range(0, 10), digits);
+        var display = codeLock.GetComponentInChildren<TMPro.TMP_Text>();
+        Assert.AreEqual(1, codeLock.OnInputChanged.GetPersistentEventCount());
+        Assert.AreEqual(display, codeLock.OnInputChanged.GetPersistentTarget(0), "display shows the entry");
+    }
+
+    [Test]
+    public void ZoneBIsBlockedUntilTheDoorOpens()
+    {
+        var condition = GameObject.Find("Environment/Doorway_AB/Puzzle_Door").GetComponent<PuzzleCondition>();
+        var blocker = GameObject.Find("Environment/Zone_B_Gallery/ZoneB_Lock");
+        Assert.IsNotNull(blocker, "blocker starts active");
+        var box = blocker.GetComponent<BoxCollider>();
+        Assert.IsFalse(box.isTrigger, "teleport ray must hit it");
+        Assert.IsNull(blocker.GetComponent<TeleportationArea>(), "blocker is not a teleport destination");
+        foreach (var area in GameObject.Find("Environment/Zone_B_Gallery").GetComponentsInChildren<TeleportationArea>())
+        {
+            var top = area.GetComponentInChildren<Collider>().bounds.center + Vector3.up * 0.05f;
+            Assert.IsTrue(box.bounds.Contains(new Vector3(top.x, 0.05f, top.z)), area.name + " is covered by the blocker");
+        }
+        Assert.That(box.bounds.max.y, Is.GreaterThanOrEqualTo(3f), "covers the wall height so arcs over the wall are blocked");
+        Assert.That(box.bounds.min.z, Is.GreaterThan(8.14f), "does not cover Zone A or the wall");
+        AssertCalls(condition.OnSolved, blocker, "SetActive");
+    }
+
+    [Test]
+    public void WelcomeVisibleAndHintMenuToggledByController()
+    {
+        var welcome = GameObject.Find("UI/WelcomePanel");
+        Assert.IsNotNull(welcome, "welcome visible at entry");
+        var toggle = GameObject.Find("UI").GetComponent<MenuToggle>();
+        Assert.IsNotNull(toggle.menu);
+        Assert.IsFalse(toggle.menu.activeSelf, "hint menu starts closed");
+        var bindings = toggle.toggleAction.action.bindings;
+        Assert.AreEqual(2, bindings.Count, "menu button of either controller");
+        Assert.IsTrue(bindings.All(b => b.path.Contains("{MenuButton}")));
+        foreach (var canvas in new[] { welcome, toggle.menu })
+        {
+            Assert.AreEqual(RenderMode.WorldSpace, canvas.GetComponent<Canvas>().renderMode);
+            Assert.IsNotNull(canvas.GetComponent<UnityEngine.XR.Interaction.Toolkit.UI.TrackedDeviceGraphicRaycaster>(), canvas.name + " reacts to XR rays");
+        }
+        AssertCalls(toggle.menu.transform.Find("CloseButton").GetComponent<UnityEngine.UI.Button>().onClick, toggle, nameof(MenuToggle.Toggle));
+        AssertCalls(welcome.transform.Find("StartButton").GetComponent<UnityEngine.UI.Button>().onClick, welcome, "SetActive");
+    }
+
+    [Test]
+    public void HintsFollowPuzzleProgression()
+    {
+        var menu = GameObject.Find("UI").GetComponent<MenuToggle>().menu.transform;
+        var gem = menu.Find("Hint_Gem").gameObject;
+        var door = menu.Find("Hint_Door").gameObject;
+        var gallery = menu.Find("Hint_Gallery").gameObject;
+        Assert.IsTrue(gem.activeSelf && !door.activeSelf && !gallery.activeSelf, "only the first hint at start");
+        var puzzle1 = GameObject.Find("Environment/Zone_A_Entrance/Puzzle_01").GetComponent<PuzzleCondition>();
+        var doorPuzzle = GameObject.Find("Environment/Doorway_AB/Puzzle_Door").GetComponent<PuzzleCondition>();
+        AssertCalls(puzzle1.OnSolved, gem, "SetActive");
+        AssertCalls(puzzle1.OnSolved, door, "SetActive");
+        AssertCalls(doorPuzzle.OnSolved, door, "SetActive");
+        AssertCalls(doorPuzzle.OnSolved, gallery, "SetActive");
+    }
+
     static void AssertCalls(UnityEventBase evt, Object target, string method)
     {
         var found = Enumerable.Range(0, evt.GetPersistentEventCount())
