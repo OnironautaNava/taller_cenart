@@ -2,7 +2,8 @@
     "name": "TallerCenart",
     "rootNamespace": "TallerCenart",
     "references": [
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "Unity.XR.Interaction.Toolkit"
     ],
     "autoReferenced": true
 }

@@ -253,7 +253,24 @@ public class Fase0SceneTests
         var top = Find("Zone_B_Gallery/Platform_West/Top").GetComponent<TeleportationArea>();
         var topY = top.GetComponentInChildren<Collider>().bounds.max.y;
         Assert.That(topY, Is.GreaterThanOrEqualTo(1.9f), "platform is high");
-        Assert.That(ladder.GetComponentInChildren<Collider>().bounds.max.y, Is.GreaterThan(topY), "ladder reaches above the platform");
+        Assert.That(ladder.GetComponentsInChildren<Collider>().Where(c => c.enabled).Max(c => c.bounds.max.y), Is.GreaterThan(topY + 0.5f), "rungs reach above the platform");
+        foreach (var body in ladder.GetComponentsInChildren<Rigidbody>())
+            Assert.IsTrue(body.isKinematic && !body.useGravity, body.name + " must not be pushed by physics");
+        Assert.IsFalse(ladder.GetComponent<Collider>().enabled, "only rungs are grabbable, not the whole ladder");
+        var climbs = ladder.GetComponentsInChildren<UnityEngine.XR.Interaction.Toolkit.Locomotion.Climbing.ClimbInteractable>();
+        var rungs = climbs.SelectMany(c => c.colliders).ToArray();
+        Assert.That(rungs.Length, Is.GreaterThanOrEqualTo(8), "every rung is a hand hold");
+        Assert.AreEqual(rungs.Length, rungs.Distinct().Count(), "a rung belongs to one climb interactable");
+        Assert.IsTrue(rungs.All(r => r.enabled && r.bounds.size.y < 0.15f), "hand holds are single rungs");
+        var climbTop = climbs.Single(c => c.climbAssistanceTeleportVolume != null);
+        Assert.IsTrue(climbTop.colliders.All(r => r.bounds.center.y > topY + 0.1f), "only rungs above the platform hand off to it");
+        Assert.IsTrue(climbs.Where(c => c != climbTop).SelectMany(c => c.colliders).All(r => r.bounds.center.y < topY + 0.1f), "releasing lower rungs drops the player");
+        var anchors = climbTop.climbAssistanceTeleportVolume.anchorTransforms;
+        Assert.IsNotEmpty(anchors);
+        var platform = Find("Zone_B_Gallery/Platform_West/Top").GetComponentInChildren<Collider>().bounds;
+        foreach (var anchor in anchors)
+            Assert.IsTrue(platform.Contains(anchor.position + Vector3.down * 0.05f), "climbing off the top lands on the platform");
+
         var balls = Find("Zone_B_Gallery").GetComponentsInChildren<Respawn>(true).Where(r => r.name.StartsWith("Ball")).ToArray();
         Assert.That(balls.Length, Is.GreaterThanOrEqualTo(1));
         var doorPuzzle = Find("Doorway_AB/Puzzle_Door").GetComponent<PuzzleCondition>();
@@ -266,6 +283,23 @@ public class Fase0SceneTests
             Assert.That(ball.transform.position.y, Is.GreaterThan(topY), ball.name + " waits on the platform");
             Assert.That(ball.minHeight, Is.InRange(0.2f, topY - 0.2f), ball.name + " returns to the platform after a miss lands on the floor");
         }
+    }
+
+    [Test]
+    public void HighSurfacesAreTeleportTargetsOnlyFromAbove()
+    {
+        var origin = Object.FindAnyObjectByType<XROrigin>().transform;
+        foreach (var path in new[] { "Zone_B_Gallery/Platform_West/Top", "Zone_B_Gallery/Platform_East/Top", "Zone_B_Gallery/Bridge" })
+        {
+            var area = Find(path).GetComponent<TeleportationArea>();
+            var hover = area.startingHoverFilters.OfType<PlayerHeightFilter>().SingleOrDefault();
+            Assert.IsNotNull(hover, path + " filters hover by player height");
+            Assert.Contains(hover, area.startingSelectFilters, path + " filters select by player height");
+            Assert.AreEqual(origin, hover.player, path);
+            Assert.That(hover.minHeight, Is.InRange(0.5f, 1.9f), path + ": above the floor, reachable when standing on the platform");
+        }
+        foreach (var floor in Find("Zone_B_Gallery").GetComponentsInChildren<TeleportationArea>().Where(a => a.name.StartsWith("Floor_")))
+            Assert.IsEmpty(floor.startingHoverFilters, floor.name + " stays reachable from anywhere");
     }
 
     [Test]
