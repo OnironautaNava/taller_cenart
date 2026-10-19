@@ -38,6 +38,7 @@ To re-theme the room, change the material on a zone's floor tiles or walls (for 
 | `Puzzle_01` | `PuzzleCondition` (Required Count 1), `Reveal` (Targets: `Reward_Key`) | Puzzle logic. |
 | `Chest_01` | `Door` (Target: lid, Open Rotation −110, 0, 0, Duration 1) | Synty chest whose lid opens. |
 | `Reward_Key` | inactive Synty key | Revealed when solved. |
+| `Challenge_01/SuccessFeedback` | `AudioSource` (clip `PUZZLE_Success_Harp_Three_Note_Bright_End_Wet_stereo`, imported Force To Mono; Spatial Blend 1, Play On Awake and Loop off, Min/Max Distance 1/15), child `FX_MagicBlast_01` (scale 0.15, Play On Awake and Looping off) | Success sound and particles at the socket. |
 
 `PuzzlePiece` is interaction layer 1 in `Assets/XRI/Settings/Resources/InteractionLayerSettings.asset`.
 
@@ -47,7 +48,12 @@ To re-theme the room, change the material on a zone's floor tiles or walls (for 
 2. Socket → Interactor Events → **Select Entered**: `Puzzle_01` → `PuzzleCondition.Signal`.
 3. Socket → **Select Exited**: `Puzzle_01` → `PuzzleCondition.Unsignal`.
 4. `Puzzle_01` → PuzzleCondition → **On Solved**: `Chest_01` → `Door.Open`, and `Puzzle_01` → `Reveal.Show`.
-5. Piece: add `XR Grab Interactable` (it adds the `Rigidbody`), a collider, and include `PuzzlePiece` in its Interaction Layer Mask. Add `Respawn`.
+5. Feedback: on the same **On Solved** list add `SuccessFeedback` → `AudioSource.Play` and `FX_MagicBlast_01` → `ParticleSystem.Play()`. Turn off Play On Awake on the AudioSource and on every particle system, or they fire when the scene loads. On Solved fires once, so retries never repeat the feedback.
+6. Piece: add `XR Grab Interactable` (it adds the `Rigidbody`), a collider, and include `PuzzlePiece` in its Interaction Layer Mask. Add `Respawn`.
+
+### With and without feedback (game feel demo)
+
+Solve the puzzle once, then in `Puzzle_01` → On Solved set the dropdown of the two feedback calls from **Runtime Only** to **Off** and solve again. The chest and key behave the same; only the sound and particles disappear. No logic changes.
 
 ## Reusable components (`Assets/Taller_CENART/Scripts`)
 

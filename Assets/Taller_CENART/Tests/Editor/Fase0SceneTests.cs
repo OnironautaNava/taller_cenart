@@ -91,6 +91,23 @@ public class Fase0SceneTests
         Assert.IsTrue(door.target != null && door.target != door.transform, "door moves the chest lid");
     }
 
+    [Test]
+    public void SocketPuzzleSuccessFeedbackIsWiredToOnSolved()
+    {
+        var condition = GameObject.Find("Environment/Zone_A_Entrance/Puzzle_01").GetComponent<PuzzleCondition>();
+        var feedback = GameObject.Find("Environment/Zone_A_Entrance/Challenge_01/SuccessFeedback");
+        Assert.IsNotNull(feedback, "success feedback sits at the socket");
+        var audio = feedback.GetComponent<AudioSource>();
+        var fx = feedback.GetComponentInChildren<ParticleSystem>();
+
+        Assert.IsNotNull(audio.clip);
+        Assert.IsFalse(audio.playOnAwake || audio.loop, "sound plays only on solve, once");
+        Assert.AreEqual(1f, audio.spatialBlend, "sound is spatial");
+        Assert.IsTrue(fx.GetComponentsInChildren<ParticleSystem>().All(p => !p.main.playOnAwake && !p.main.loop), "particles play only on solve, once");
+        AssertCalls(condition.OnSolved, audio, nameof(AudioSource.Play));
+        AssertCalls(condition.OnSolved, fx, nameof(ParticleSystem.Play));
+    }
+
     static void AssertCalls(UnityEventBase evt, Object target, string method)
     {
         var found = Enumerable.Range(0, evt.GetPersistentEventCount())

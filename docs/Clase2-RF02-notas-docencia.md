@@ -46,6 +46,12 @@ Que cada participante agarre, suelte y lance objetos en VR y arme su primer acer
   - Required Count = 0 registra un error y el acertijo nunca se resuelve.
   - Un `Reveal` sin objetos asignados muestra una advertencia.
 
+## Game feel: sonido y partículas
+
+Al resolver, `SuccessFeedback` (en `Challenge_01`) toca un sonido espacial y una explosión de partículas en el socket. Se conecta en el mismo **On Solved** de `Puzzle_01`: `AudioSource.Play` y `ParticleSystem.Play()`.
+
+Demostración: resolver una vez con feedback; después poner las dos llamadas de feedback en **Off** (menú desplegable de cada llamada en On Solved) y resolver de nuevo. El acertijo funciona igual, pero se siente distinto. Preguntar al grupo qué cambió.
+
 ## Preguntas para la discusión
 
 - ¿Por qué la pelota no activa el acertijo, aunque también se puede agarrar? (Por las capas de interacción.)
@@ -54,12 +60,14 @@ Que cada participante agarre, suelte y lance objetos en VR y arme su primer acer
 
 ## Evidencia
 
-- **Tests EditMode:** 15/15 pasan, en `Assets/Taller_CENART/Tests/Editor/PuzzleComponentTests.cs` y `Fase0SceneTests.cs`.
+- **Tests EditMode:** 16/16 pasan (incluye el cableado del feedback), en `Assets/Taller_CENART/Tests/Editor/PuzzleComponentTests.cs` y `Fase0SceneTests.cs`.
 - **Play Mode:** la pelota es rechazada y la gema resuelve el acertijo. La caída regresa el objeto al estante, y sacar y volver a meter la gema no lo resuelve dos veces.
+- **Feedback (Play Mode):** nada suena antes de resolver; al resolver suenan audio y partículas; sacar y volver a meter la gema no los repite.
 - **Meta Quest:** probado en el headset con Build and Run. El APK se genera con la configuración de Android de la plantilla VR de Unity.
 
 ## Pendiente
 
+- Validar en Quest la percepción espacial del sonido, la comodidad y el rendimiento de las partículas.
 - Medir cuánto tarda otra persona en armar el acertijo con estos pasos (experimento del Inspector).
 
 Referencia técnica de la escena: [Fase0.md](Fase0.md).
