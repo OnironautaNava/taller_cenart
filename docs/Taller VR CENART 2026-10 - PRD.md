@@ -79,7 +79,7 @@ Los criterios de esta sección, incluida la variedad obligatoria de los tres ace
 | Día 5: APK compilado y presentación; instalación y prueba en Quest según disponibilidad, con presentación en simulador como alternativa | lagging | Entregar y demostrar la experiencia construida durante el taller. |
 | Proyecto de referencia completo y probado en Quest 3S antes del taller | lagging | Disponer de una experiencia funcional para la demostración inicial y la enseñanza por etapas. |
 
-**Variedad obligatoria:** los tres acertijos no deben sentirse monótonos. Mantener el acertijo de socket y el de botones o poke del roadmap, pero diferenciando sus acciones principales; no basta con repetir la misma interacción cambiando el objeto, color o código. El tercer reto puede ser una prueba de habilidad al disparar o lanzar algo con precisión, sin convertir esas dos alternativas en requisitos simultáneos. La mecánica concreta del tercer reto queda por definir.
+**Variedad obligatoria:** los tres acertijos no deben sentirse monótonos. Mantener el acertijo de socket y el de botones o poke del roadmap, pero diferenciando sus acciones principales; no basta con repetir la misma interacción cambiando el objeto, color o código. El tercer reto puede ser una prueba de habilidad al disparar o lanzar algo con precisión, sin convertir esas dos alternativas en requisitos simultáneos. Se eligió el lanzamiento de precisión (ver Dudas abiertas).
 
 **Comprobación:** recorrer los tres retos y verificar una acción principal distinta en cada uno, además de que sus soluciones se encadenan. Los hitos diarios comprueban la progresión docente; el proyecto de referencia se prepara completo antes del taller.
 
@@ -100,7 +100,7 @@ Los criterios de esta sección, incluida la variedad obligatoria de los tres ace
 | Versión exacta de Unity y entorno Android pendientes | Validar el laboratorio y conservar la laptop del instructor como respaldo. |
 | Internet o paquetes no disponibles | Preparar y comprobar la base y los recursos antes del taller. |
 | Mareo o incomodidad | Teleport y snap turn por defecto; no desplazar artificialmente la cámara del usuario. |
-| Posible dificultad excesiva del reto de precisión | Si se elige, validar que sea realizable en simulador y visor sin bloquear desproporcionadamente el recorrido. |
+| Posible dificultad excesiva del reto de precisión | Validar que sea realizable en simulador y visor sin bloquear desproporcionadamente el recorrido. |
 | Tiempo insuficiente para instalar todos los APK | Presentación en simulador e instalaciones pendientes al cierre. |
 
 **Entorno acordado en el plan del taller:** Unity 6 LTS, OpenXR y XR Interaction Toolkit (XRI) 3.x, partiendo de una base derivada de la plantilla VR de Unity Hub, con XR Origin, XR Device Simulator y Android configurados. Conservar ese stack; la versión exacta de Unity y las versiones concretas de paquetes deberán fijarse según el entorno validado del laboratorio. Meta XR Interaction SDK no sustituye a XRI en el alcance obligatorio.
@@ -112,7 +112,7 @@ Estos puntos deberán validarse; no se consideran hechos comprobados:
 - Las computadoras del laboratorio podrán ejecutar la base y el simulador con fluidez.
 - La configuración desde el Inspector permitirá completar los retos obligatorios dentro del tiempo de práctica.
 - Las pistas permitirán comprender qué hacer sin que el instructor explique cada solución.
-- Los tres retos ofrecerán variedad y una dificultad adecuada; si se elige precisión, funcionará tanto en simulador como en Quest.
+- Los tres retos ofrecerán variedad y una dificultad adecuada; el reto de precisión y la escalada funcionarán tanto en simulador como en Quest.
 - La experiencia podrá adaptarse a distintos temas artísticos sin reescribir los componentes.
 
 ## Discovery — Experimentos
@@ -124,15 +124,15 @@ Plan de validación confirmado. Las pruebas no se han realizado ni sus hipótesi
 | La base permite trabajar en las computadoras del laboratorio. | Abrir la base en una PC del laboratorio y comprobar el simulador y la configuración disponible. | — | Pendiente: determinar si el entorno permite seguir la práctica o necesita ajustes. |
 | El armado desde el Inspector es comprensible y cabe en el tiempo de práctica. | Armar un acertijo solo desde el Inspector y observar claridad del proceso y tiempo requerido. | — | Pendiente: determinar si hay que simplificar la configuración o las instrucciones. |
 | Las pistas y el encadenamiento permiten completar un recorrido variado. | Pedir a otra persona que recorra el cuarto sin explicarle las soluciones. | — | Pendiente: identificar dificultades de comprensión, progresión o monotonía. |
-| La interacción y el confort son adecuados en el visor. | Probar el recorrido en Quest 3S, incluida la dificultad del reto de precisión si se elige. | — | Pendiente: determinar ajustes de interacción, confort o dificultad. |
+| La interacción y el confort son adecuados en el visor. | Probar el recorrido en Quest 3S, incluidos la escalada por peldaños y la dificultad del reto de precisión. | — | Pendiente: determinar ajustes de interacción, confort o dificultad. |
 | El entorno permite desplegar la experiencia antes de depender de él en clase. | Compilar e instalar el APK. | — | Pendiente: identificar y resolver bloqueos de despliegue. |
 
 ## Post-Discovery
 
-- Solución propuesta y razonamiento: un **cuarto de acertijos VR de temática artística**, con dos zonas como mínimo y tres retos encadenados con acciones distintas: socket, combinación de botones/poke y un tercero por definir, posiblemente de precisión. La entrega incluirá el proyecto completo del instructor, la base preconfigurada y los componentes reutilizables del roadmap. Su construcción seguirá la progresión de las cinco clases.
+- Solución propuesta y razonamiento: un **cuarto de acertijos VR de temática artística**, con dos zonas como mínimo y tres retos encadenados con acciones distintas: socket, combinación de botones/poke y un tercero de lanzamiento de precisión desde una plataforma alta. La entrega incluirá el proyecto completo del instructor, la base preconfigurada y los componentes reutilizables del roadmap. Su construcción seguirá la progresión de las cinco clases.
 - Valor y ROI potencial: el valor esperado es docente: reutilizar lo aprendido e integrar cada práctica en la experiencia final. Retorno económico: —.
 - Costo estimado: —
-- Preguntas abiertas / FAQ: tema concreto del proyecto de referencia, mecánica del tercer reto y versiones exactas del entorno pendientes de definir.
+- Preguntas abiertas / FAQ: tema concreto del proyecto de referencia y versiones exactas del entorno pendientes de definir.
 
 Esta solución se basa en el roadmap y las decisiones confirmadas; no implica que las pruebas del plan de validación ya hayan sido realizadas.
 
@@ -163,7 +163,7 @@ La referencia completa debe estar preparada antes del taller. Esta tabla ordena 
 - Los componentes tendrán ejemplos configurables desde el Inspector: `PuzzleCondition` espera N eventos y dispara `OnSolved`; `Door` / `Reveal` abre, mueve o activa algo; `CodeLock` reconoce una secuencia de botones; `Timer` ofrece cuenta regresiva con `OnTimeUp` y su uso en el cuarto es opcional.
 - La lógica obligatoria se arma sin exigir programación a los participantes. Las extensiones con IA siguen siendo opcionales.
 - Hand tracking será demostración, no requisito del recorrido obligatorio.
-- El tercer reto tendrá una acción principal distinta de socket y combinación; lanzamiento o disparo de precisión son alternativas, no requisitos simultáneos. La mecánica concreta sigue pendiente.
+- El tercer reto tendrá una acción principal distinta de socket y combinación; se eligió el lanzamiento de precisión (ver Dudas abiertas).
 
 ## GTM (opcional)
 
@@ -174,7 +174,7 @@ La referencia completa debe estar preparada antes del taller. Esta tabla ordena 
 ## Dudas abiertas
 
 - **Tema concreto del proyecto de referencia:** —. No bloquea la base XR ni la lógica reutilizable; definir antes de cerrar ambientación y pistas definitivas.
-- **Mecánica concreta del tercer reto:** lanzamiento de precisión (decidido 2026-10-19). El jugador sube por una escalera estática a una plataforma alta en la zona 2 y lanza una pelota a un blanco; al atinar, cae una tabla que hace de puente hacia el otro lado, donde una palanca abre la puerta final que lleva a la salida. Los únicos activadores son atinar en el blanco y jalar la palanca. Reintento: una pelota que falla vuelve a la plataforma. Simulador: agarre (G) para escalar y lanzar; en Quest se valida aparte la dificultad del lanzamiento.
+- **Mecánica concreta del tercer reto:** lanzamiento de precisión (decidido 2026-10-19). El jugador sube por una escalera estática a una plataforma alta en la zona 2 y lanza una pelota a un blanco; al atinar, cae una tabla que hace de puente hacia el otro lado, donde una palanca abre la puerta final que lleva a la salida. Los únicos activadores son atinar en el blanco y jalar la palanca. Reintento: una pelota que falla vuelve a la plataforma. La escalera se sube agarrando cada peldaño con la locomoción Climb del XR Origin; al soltar el último peldaño, el jugador queda sobre la plataforma. Las superficies altas (plataformas y puente) no aceptan teleport desde el piso, pero sí permiten moverse por teleport una vez arriba (`PlayerHeightFilter`). Simulador: agarre (G) para escalar y lanzar; en Quest se valida aparte la dificultad del lanzamiento.
 - **Versiones exactas de Unity y paquetes:** —. Confirmar con el laboratorio antes de fijar el entorno distribuible; no elegir versiones incompatibles por asumir que cualquier Unity 6 LTS es equivalente.
 - **Resultados de validación:** —. Ejecutar y registrar las pruebas de Discovery; la referencia deberá estar probada en Quest 3S antes del taller. No confundir el plan confirmado con evidencia de pruebas realizadas.
 - **Confirmaciones operativas:** lista definitiva y posibles visores adicionales pendientes según la nota de selección. Planificar con un solo Quest 3S mientras no se confirme otro recurso.

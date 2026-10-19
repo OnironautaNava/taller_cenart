@@ -21,7 +21,7 @@ El recorrido obligatorio definido en el [PRD del proyecto](docs/Taller%20VR%20CE
 
 - Al menos dos zonas conectadas mediante teleportación.
 - Tres acertijos encadenados con acciones principales distintas.
-- Interacciones de agarre y socket, y botones o poke; la mecánica concreta del tercer reto queda por definir en el PRD.
+- Interacciones de agarre y socket, botones o poke y, en el tercer reto, escalada por peldaños y lanzamiento de precisión (detalle en el PRD y en [`docs/Fase0.md`](docs/Fase0.md)).
 - Pistas, retroalimentación y ambientación que acompañen el recorrido.
 - Comprobación principalmente en simulador y pruebas de interacción y confort en Quest 3S.
 
