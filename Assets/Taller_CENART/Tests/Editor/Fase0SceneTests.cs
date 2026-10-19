@@ -124,6 +124,21 @@ public class Fase0SceneTests
     }
 
     [Test]
+    public void FloorIsTeleportTargetNotGrabbable()
+    {
+        var teleport = InteractionLayerMask.GetMask("Teleport");
+        var rays = Object.FindObjectsByType<XRRayInteractor>(FindObjectsSortMode.None).Where(r => r.name == "Teleport Interactor").ToArray();
+        var hands = Object.FindObjectsByType<NearFarInteractor>(FindObjectsSortMode.None);
+        Assert.AreEqual(2, rays.Length);
+        foreach (var area in Object.FindObjectsByType<TeleportationArea>(FindObjectsSortMode.None))
+        {
+            Assert.AreEqual(teleport, area.interactionLayers.value, area.name + " must be on the Teleport interaction layer only");
+            Assert.IsTrue(rays.All(r => (r.interactionLayers & area.interactionLayers) != 0), area.name + " must be reachable by the teleport ray");
+            Assert.IsTrue(hands.All(h => (h.interactionLayers & area.interactionLayers) == 0), area.name + " must not be grabbable");
+        }
+    }
+
+    [Test]
     public void DoorNeedsKeyInLockAndCode()
     {
         var condition = GameObject.Find("Environment/Doorway_AB/Puzzle_Door").GetComponent<PuzzleCondition>();

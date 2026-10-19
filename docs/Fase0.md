@@ -21,7 +21,7 @@ Every floor tile carries a `TeleportationArea` and a collider whose top sits at 
 
 ## Reusable assets (adapt without code)
 
-- `Assets/Taller_CENART/Prefabs/Floor_2x2_Teleport`: Synty `SM_Buildings_Floor_2x2_01P` with a `TeleportationArea`. Pivot is the tile's min corner.
+- `Assets/Taller_CENART/Prefabs/Floor_2x2_Teleport`: Synty `SM_Buildings_Floor_2x2_01P` with a `TeleportationArea` on the `Teleport` interaction layer only, so the teleport ray targets it and the Near-Far (grab) interactor ignores it. Pivot is the tile's min corner.
 - `Assets/Taller_CENART/Prefabs/ChallengePedestal`: Synty `Plinth_02` raised to reach height, with a `Slot` child marking where a challenge mounts.
 - Walls and props are Synty prefabs used directly.
 
