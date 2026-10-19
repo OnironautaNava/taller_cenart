@@ -242,6 +242,132 @@ public class Fase0SceneTests
         AssertCalls(doorPuzzle.OnSolved, gallery, "SetActive");
     }
 
+    static GameObject Find(string path) => GameObject.Find("Environment/" + path);
+
+    [Test]
+    public void LadderClimbsToTheWestPlatformWithBalls()
+    {
+        var ladder = Find("Zone_B_Gallery/Ladder");
+        Assert.IsNotNull(ladder.GetComponent<UnityEngine.XR.Interaction.Toolkit.Locomotion.Climbing.ClimbInteractable>(), "ladder is climbable");
+        Assert.IsNull(ladder.GetComponent<TallerCenart.PuzzleCondition>(), "ladder is static, not an activator");
+        var top = Find("Zone_B_Gallery/Platform_West/Top").GetComponent<TeleportationArea>();
+        var topY = top.GetComponentInChildren<Collider>().bounds.max.y;
+        Assert.That(topY, Is.GreaterThanOrEqualTo(1.9f), "platform is high");
+        Assert.That(ladder.GetComponentInChildren<Collider>().bounds.max.y, Is.GreaterThan(topY), "ladder reaches above the platform");
+        var balls = Find("Zone_B_Gallery").GetComponentsInChildren<Respawn>(true).Where(r => r.name.StartsWith("Ball")).ToArray();
+        Assert.That(balls.Length, Is.GreaterThanOrEqualTo(1));
+        var doorPuzzle = Find("Doorway_AB/Puzzle_Door").GetComponent<PuzzleCondition>();
+        foreach (var ball in balls)
+        {
+            Assert.IsFalse(ball.gameObject.activeSelf, ball.name + " cannot start inside ZoneB_Lock");
+            AssertCalls(doorPuzzle.OnSolved, ball.gameObject, "SetActive");
+            Assert.IsNotNull(ball.GetComponent<SphereCollider>(), ball.name + " collides");
+            Assert.IsTrue(ball.GetComponent<XRGrabInteractable>().throwOnDetach, ball.name);
+            Assert.That(ball.transform.position.y, Is.GreaterThan(topY), ball.name + " waits on the platform");
+            Assert.That(ball.minHeight, Is.InRange(0.2f, topY - 0.2f), ball.name + " returns to the platform after a miss lands on the floor");
+        }
+    }
+
+    [Test]
+    public void TargetHitDropsTheBridgeAndUnlocksTheLever()
+    {
+        var target = Find("Zone_B_Gallery/Bridge").GetComponentInChildren<TargetHit>();
+        var puzzle = Find("Zone_B_Gallery/Puzzle_Target").GetComponent<PuzzleCondition>();
+        var bridge = Find("Zone_B_Gallery/Bridge");
+        var bridgeArea = bridge.GetComponent<TeleportationArea>();
+        var eastLock = Find("Zone_B_Gallery/EastLock");
+        var lever = Find("Zone_B_Gallery/Challenge_03").GetComponentInChildren<XRSimpleInteractable>(true);
+
+        Assert.IsNotNull(target.GetComponent<Collider>(), "target receives collisions");
+        Assert.AreEqual(1, puzzle.requiredCount);
+        AssertCalls(target.OnHit, puzzle, nameof(PuzzleCondition.Signal));
+        AssertCalls(puzzle.OnSolved, bridge.GetComponent<Door>(), nameof(Door.Open));
+        Assert.IsFalse(bridgeArea.enabled, "upright bridge is not a teleport destination");
+        AssertCalls(puzzle.OnSolved, bridgeArea, "set_enabled");
+        Assert.IsFalse(lever.enabled, "lever cannot be pulled before the bridge falls");
+        AssertCalls(puzzle.OnSolved, lever, "set_enabled");
+        AssertCalls(puzzle.OnSolved, eastLock, "SetActive");
+
+        var box = eastLock.GetComponent<BoxCollider>();
+        Assert.IsFalse(box.isTrigger);
+        var eastTop = Find("Zone_B_Gallery/Platform_East/Top").GetComponentInChildren<Collider>().bounds;
+        Assert.IsTrue(box.bounds.Contains(eastTop.center + Vector3.up * 0.1f), "east platform blocked before the bridge");
+        Assert.IsTrue(box.bounds.Contains(lever.transform.position + Vector3.up * 0.1f), "lever enclosed before the bridge");
+        Assert.That(box.bounds.min.x, Is.GreaterThan(target.GetComponent<Collider>().bounds.max.x), "blocker does not shield the target");
+        Assert.That(target.GetComponent<Collider>().bounds.max.y, Is.LessThan(4f), "target stays under ZoneB_Lock so it cannot be hit from Zone A");
+    }
+
+    [Test]
+    public void LeverOpensTheFinalDoorToTheExit()
+    {
+        var lever = Find("Zone_B_Gallery/Challenge_03").GetComponentInChildren<XRSimpleInteractable>(true);
+        var puzzle = Find("Zone_B_Gallery/Puzzle_Lever").GetComponent<PuzzleCondition>();
+        var door = Find("Exit/FinalDoor").GetComponent<Door>();
+        var exitLock = Find("Exit/ExitLock");
+        var panel = GameObject.Find("UI").transform.Find("ExitPanel").gameObject;
+
+        AssertCalls(lever.selectEntered, puzzle, nameof(PuzzleCondition.Signal));
+        AssertCalls(puzzle.OnSolved, door, nameof(Door.Open));
+        AssertCalls(puzzle.OnSolved, exitLock, "SetActive");
+        Assert.IsFalse(panel.activeSelf, "completion message hidden until the lever");
+        AssertCalls(puzzle.OnSolved, panel, "SetActive");
+        var box = exitLock.GetComponent<BoxCollider>();
+        Assert.IsFalse(box.isTrigger);
+        Assert.That(box.bounds.max.y, Is.GreaterThanOrEqualTo(3f));
+        foreach (var area in Find("Exit").GetComponentsInChildren<TeleportationArea>())
+        {
+            var c = area.GetComponentInChildren<Collider>().bounds.center;
+            Assert.IsTrue(box.bounds.Contains(new Vector3(c.x, 0.05f, c.z)), area.name + " blocked until the lever");
+        }
+    }
+
+    [TestCase("Puzzle_Target", "TargetFeedback")]
+    [TestCase("Puzzle_Lever", "LeverFeedback")]
+    public void ThirdChallengeFeedbackIsSpatialAndWired(string puzzleName, string feedbackName)
+    {
+        var puzzle = Find("Zone_B_Gallery/" + puzzleName).GetComponent<PuzzleCondition>();
+        var sources = Find("Zone_B_Gallery/" + feedbackName).GetComponentsInChildren<AudioSource>();
+        Assert.IsNotEmpty(sources);
+        foreach (var audio in sources)
+        {
+            Assert.IsNotNull(audio.clip, audio.name);
+            Assert.IsFalse(audio.playOnAwake || audio.loop, audio.name);
+            Assert.AreEqual(1f, audio.spatialBlend, audio.name + " is spatial");
+            AssertCalls(puzzle.OnSolved, audio, nameof(AudioSource.Play));
+        }
+        foreach (var fx in Find("Zone_B_Gallery/" + feedbackName).GetComponentsInChildren<ParticleSystem>())
+            Assert.IsFalse(fx.main.playOnAwake || fx.main.loop, fx.name);
+    }
+
+    [Test]
+    public void HintsCoverTheThirdChallengeAndExit()
+    {
+        var menu = GameObject.Find("UI").GetComponent<MenuToggle>().menu.transform;
+        var gallery = menu.Find("Hint_Gallery").gameObject;
+        var lever = menu.Find("Hint_Lever").gameObject;
+        var exit = menu.Find("Hint_Exit").gameObject;
+        Assert.IsFalse(lever.activeSelf || exit.activeSelf);
+        StringAssert.DoesNotContain("Pendiente", gallery.GetComponent<TMPro.TMP_Text>().text);
+        var target = Find("Zone_B_Gallery/Puzzle_Target").GetComponent<PuzzleCondition>();
+        var leverPuzzle = Find("Zone_B_Gallery/Puzzle_Lever").GetComponent<PuzzleCondition>();
+        AssertCalls(target.OnSolved, gallery, "SetActive");
+        AssertCalls(target.OnSolved, lever, "SetActive");
+        AssertCalls(leverPuzzle.OnSolved, lever, "SetActive");
+        AssertCalls(leverPuzzle.OnSolved, exit, "SetActive");
+    }
+
+    [Test]
+    public void RoomDoesNotRequireTheTimer()
+    {
+        Assert.IsEmpty(Object.FindObjectsByType<Timer>(FindObjectsInactive.Include, FindObjectsSortMode.None));
+        var example = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Taller_CENART/Prefabs/TimerExample.prefab");
+        Assert.IsNotNull(example, "reusable Timer example prefab");
+        var timer = example.GetComponent<Timer>();
+        Assert.AreEqual(1, timer.OnTextChanged.GetPersistentEventCount());
+        Assert.IsInstanceOf<TMPro.TMP_Text>(timer.OnTextChanged.GetPersistentTarget(0));
+        Assert.That(timer.OnTimeUp.GetPersistentEventCount(), Is.GreaterThanOrEqualTo(1));
+    }
+
     static void AssertCalls(UnityEventBase evt, Object target, string method)
     {
         var found = Enumerable.Range(0, evt.GetPersistentEventCount())

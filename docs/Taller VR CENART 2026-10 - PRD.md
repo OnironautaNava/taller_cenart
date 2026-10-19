@@ -174,7 +174,7 @@ La referencia completa debe estar preparada antes del taller. Esta tabla ordena 
 ## Dudas abiertas
 
 - **Tema concreto del proyecto de referencia:** —. No bloquea la base XR ni la lógica reutilizable; definir antes de cerrar ambientación y pistas definitivas.
-- **Mecánica concreta del tercer reto:** —. Definir antes de implementar ese reto; lanzamiento o disparo de precisión son alternativas, no requisitos simultáneos.
+- **Mecánica concreta del tercer reto:** lanzamiento de precisión (decidido 2026-10-19). El jugador sube por una escalera estática a una plataforma alta en la zona 2 y lanza una pelota a un blanco; al atinar, cae una tabla que hace de puente hacia el otro lado, donde una palanca abre la puerta final que lleva a la salida. Los únicos activadores son atinar en el blanco y jalar la palanca. Reintento: una pelota que falla vuelve a la plataforma. Simulador: agarre (G) para escalar y lanzar; en Quest se valida aparte la dificultad del lanzamiento.
 - **Versiones exactas de Unity y paquetes:** —. Confirmar con el laboratorio antes de fijar el entorno distribuible; no elegir versiones incompatibles por asumir que cualquier Unity 6 LTS es equivalente.
 - **Resultados de validación:** —. Ejecutar y registrar las pruebas de Discovery; la referencia deberá estar probada en Quest 3S antes del taller. No confundir el plan confirmado con evidencia de pruebas realizadas.
 - **Confirmaciones operativas:** lista definitiva y posibles visores adicionales pendientes según la nota de selección. Planificar con un solo Quest 3S mientras no se confirme otro recurso.

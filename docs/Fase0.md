@@ -9,11 +9,12 @@ Entry scene: `Assets/Taller_CENART/Scenes/Fase0.unity`. Open it and press Play; 
 | `XR Origin (XR Rig)` | The only rig (project copy in `Scenes/Fase0/`). Starts at `(0, 0, 1.5)` facing the gallery. |
 | `XR Interaction Manager`, `EventSystem` | The only interaction manager and UI event system. |
 | `Environment/Zone_A_Entrance` | Zone A, x −4..4, z 0..8, wood floor. Holds `Challenge_01`. |
-| `Environment/Zone_B_Gallery` | Zone B, x −4..4, z 8..16, carpet floor, statues. Holds `Challenge_02` and `Challenge_03`. |
+| `Environment/Zone_B_Gallery` | Zone B, x −4..4, z 8..16, carpet floor, statues. Holds the third challenge: two 2 m platforms, ladder, balls, target bridge and lever (`Challenge_02`, `Challenge_03`). |
+| `Environment/Exit` | Final door in the north wall (under the bridge) and the exit room, z 16..20 (RF-04). |
 | `Environment/Walls` | Synty walls, windows and columns, plus a divider at z = 8 built around a Synty door wall. |
 | `Environment/Props` | Synty wall sconces and two hanging lamps with point lights. |
 | `Environment/Doorway_AB` | The door between zones and its two conditions: key lock and keypad (RF-03). |
-| `UI` | Welcome panel at the entry and the hint menu toggled from the controller (RF-03). |
+| `UI` | Welcome panel at the entry, the hint menu toggled from the controller (RF-03) and the completion panel in the exit (RF-04). |
 
 All visible art comes from `Assets/Synty/` (PolygonPrototype building kit, PolygonGeneric props and materials). The roof is open, the skybox is Synty `Skybox_01`, and ambient light is Trilight so walls facing away from the sun stay readable.
 
@@ -102,9 +103,44 @@ Teleport and snap turn are the only locomotion: both controllers' `ControllerInp
 | `HintMenu` | world-space `Canvas`, `TrackedDeviceGraphicRaycaster`, starts off | Shows the current hint; opens in front of the player at eye height. `Cerrar` → `MenuToggle.Toggle`. |
 | `HintMenu/Hint_Gem`, `Hint_Door`, `Hint_Gallery` | `TextMeshProUGUI` | One active at a time. |
 
-Hints follow progression with plain `GameObject.SetActive` calls: `Puzzle_01` On Solved turns `Hint_Gem` off and `Hint_Door` on; `Puzzle_Door` On Solved turns `Hint_Door` off and `Hint_Gallery` on. `Hint_Gallery` is placeholder copy until the RF-04 puzzles are decided. Press the UI buttons with the controller ray and trigger.
+Hints follow progression with plain `GameObject.SetActive` calls: `Puzzle_01` On Solved turns `Hint_Gem` off and `Hint_Door` on; `Puzzle_Door` On Solved turns `Hint_Door` off and `Hint_Gallery` on; the third challenge continues the chain (see *Route* below). Press the UI buttons with the controller ray and trigger.
 
-`Challenge_02` and `Challenge_03` in Zone B are still empty pedestals for RF-04: the code puzzle lives on the door.
+Route: gem → key + code door → target → lever → exit. `Hint_Gallery` covers the target, `Hint_Lever` the bridge and lever, `Hint_Exit` the way out: `Puzzle_Target` On Solved turns `Hint_Gallery` off and `Hint_Lever` on; `Puzzle_Lever` On Solved turns `Hint_Lever` off and `Hint_Exit` on.
+
+## Third challenge: climb, throw, bridge, lever (RF-04)
+
+Climb the ladder to the west platform, throw a ball at the round target on the upright planks across the gap: the planks fall and become a bridge to the east platform. Pull the lever there: the final door in the north wall opens and the exit shows the completion panel. Only two things trigger anything: hitting the target and pulling the lever. The ladder is static.
+
+| Object (under `Environment/Zone_B_Gallery` unless noted) | Components | Role |
+|---|---|---|
+| `Platform_West`, `Platform_East` | `Top`: `Floor_2x2_Teleport` scaled 1.5 × 2 at y = 2; Synty walls scaled to 2 m on the faces | Platforms x −4..−1 and 1..4, z 12..16, with a 2 m gap. |
+| `Ladder` | Synty `SM_Gen_Bld_Ladder_01` (3 m), `ClimbInteractable` | Grab with grip and pull down to climb (the rig's `ClimbProvider`); at the top, teleport onto the platform. |
+| `Ball_1` … `Ball_3` | Synty tennis ball, `SphereCollider`, `Rigidbody`, `XRGrabInteractable` (Throw On Detach), `Respawn` (Min Height 1) | On the `Challenge_02` pedestal. Start inactive; `Puzzle_Door` On Solved activates them (a dynamic object inside `ZoneB_Lock` would be pushed on top of it). A miss lands on the floor (y 0 < 1) and the ball returns to the pedestal. |
+| `Bridge` | `Door` (Open Rotation 0, 0, 90, Duration 1.2), `TeleportationArea` (Teleport layer, **disabled**), three Synty planks | Upright on the east edge of the gap; hinged to fall west. |
+| `Bridge/Target` | Synty `SM_Prop_Target_03` (convex `MeshCollider`), `TargetHit` | Faces the west platform, centre y ≈ 3.65 (below `ZoneB_Lock`'s 4 m so it cannot be hit from Zone A). |
+| `Puzzle_Target` | `PuzzleCondition` (Required Count 1) | Target logic. |
+| `EastLock` | solid `BoxCollider` x 1..4, y 1.95..5.05, z 12..16 | Blocks teleport onto the east platform and rays to the lever until the bridge falls. |
+| `Challenge_03/Slot/Lever` | Synty `SM_Switch_Lever_01`, `XRSimpleInteractable` (**disabled**), `Door` (Target: stick, Open Rotation −60, 0, 0) | Select (grip or trigger, near or ray) pulls it. |
+| `Puzzle_Lever` | `PuzzleCondition` (Required Count 1) | Lever logic. |
+| `TargetFeedback/TargetHit` (+ `FX_MagicBlast_01`), `TargetFeedback/BridgeFall` | spatial `AudioSource` | Success sound and particles at the target, wood thud at the bridge. |
+| `LeverFeedback/LeverPull`, `LeverFeedback/FinalDoorOpen` (+ `FX_MagicBlast_01`) | spatial `AudioSource` | Lever sound; fanfare and particles at the final door. |
+| `Environment/Exit/FinalDoor` | `Door` (Open Rotation 0, 95, 0, Duration 1.5), child Synty door `Leaf` | Same door as `Door_AB`, in the north wall; swings into the exit. |
+| `Environment/Exit/ExitLock` | solid `BoxCollider` over the exit room up to 4 m | Blocks teleport into the exit (through the door or over the wall) until the lever. |
+| `UI/ExitPanel` | world-space `Canvas` (copy of the welcome panel), starts off | "¡Encontraste la salida!" and the three solved challenges. |
+
+### Inspector wiring (rebuild without code)
+
+1. `Bridge/Target` → TargetHit → **On Hit**: `Puzzle_Target` → `PuzzleCondition.Signal`. Every Rigidbody hit calls it; the condition solves once.
+2. `Puzzle_Target` → **On Solved**: `Bridge` → `Door.Open`; `Bridge` → `TeleportationArea.enabled` (on); `Lever` → `XRSimpleInteractable.enabled` (on); `EastLock` → `GameObject.SetActive` (off); `TargetHit` and `BridgeFall` → `AudioSource.Play`; `FX_MagicBlast_01` → `ParticleSystem.Play()`; hints.
+3. `Lever` → XR Simple Interactable → **Select Entered**: `Puzzle_Lever` → `PuzzleCondition.Signal`.
+4. `Puzzle_Lever` → **On Solved**: `Lever` → `Door.Open` (pulls the stick); `FinalDoor` → `Door.Open`; `ExitLock` → `GameObject.SetActive` (off); `ExitPanel` → `GameObject.SetActive` (on); `LeverPull`, `FinalDoorOpen` → `AudioSource.Play`; `FX_MagicBlast_01` → `ParticleSystem.Play()`; hints.
+5. Leave the bridge's Teleportation Area and the lever's XR Simple Interactable **unchecked** in the Inspector: they start disabled and the events turn them on.
+
+### Retry and order
+
+- A miss never solves; the ball returns to the pedestal and the player throws again. Three balls are available.
+- The lever cannot be pulled early: its interactable is disabled and enclosed by `EastLock` until the bridge falls. The target sits in Zone B, behind `ZoneB_Lock` until the key + code door opens.
+- To make the throw harder or easier, move or scale `Bridge/Target`, or raise the balls' Min Height. Tune distances on Quest separately; simulator success does not prove device difficulty.
 
 ## Reusable components (`Assets/Taller_CENART/Scripts`)
 
@@ -116,6 +152,12 @@ Hints follow progression with plain `GameObject.SetActive` calls: `Puzzle_01` On
 | `CodeLock` | Code (digits), On Solved, On Wrong, On Input Changed (string) | `Press(int)`, `Clear()` | Checks the digits in order once the entry is as long as Code. See *CodeLock behavior*. |
 | `MenuToggle` | Toggle Action (default: menu button of either controller), Menu, Head (empty = main camera), Distance | `Toggle()` | Shows/hides Menu; on opening places it in front of Head at eye height, upright. |
 | `Respawn` | Min Height (default −2) | `ResetPose()` | Returns the object to its start pose and stops it when it falls below Min Height (for example, thrown over a wall). |
+| `TargetHit` | On Hit | `Hit(Rigidbody)` | Fires On Hit on every collision with an object that has a Rigidbody; walls and floors without one do not count. Wire it to `PuzzleCondition.Signal`. |
+| `Timer` | Duration, Start On Enable, On Time Up, On Text Changed (string) | `StartTimer()`, `Stop()` | Optional, **not used in the room**. `StartTimer` (re)starts from the full Duration; `Stop` pauses without firing; at zero On Time Up fires once and the timer stops. On Text Changed sends `mm:ss`, partial seconds rounded up. |
+
+### Timer example
+
+`Assets/Taller_CENART/Prefabs/TimerExample.prefab`: a 60 s `Timer` with Start On Enable, a `Display` TextMeshPro wired to On Text Changed, and a hidden `TimeUp` text that On Time Up activates. Drop it in a scene to try it; to restart, call `StartTimer` from any event (for example a button's On Click). Nothing in the room waits for it, so the three challenges stay completable without a timer.
 
 For N inputs (for example, three sockets), set Required Count to N and wire each source to the same `PuzzleCondition`.
 
@@ -140,11 +182,18 @@ Controls (from the sample's input actions):
 
 - `Assets/Taller_CENART/Tests/Editor/Fase0SceneTests.cs` (EditMode): simulator configured editor-only, one rig and one manager, both zones have teleportable floors, three pedestal instances, no missing scripts, socket puzzle wiring, teleport + snap turn only, door needs key and code, keypad enters each digit once, Zone B blocked until the door opens, welcome/hint menu and controller toggle, hints follow progression.
 - `Assets/Taller_CENART/Tests/Editor/PuzzleComponentTests.cs` (EditMode): PuzzleCondition event count and single solve, invalid count, Door poses, Reveal targets and warnings.
+- `Fase0SceneTests.cs` (RF-04): ladder climbable and taller than the platform, balls start inactive, collide and return above the floor, target → bridge/lever/east lock wiring, lever → final door/exit lock/panel, spatial feedback, hint chain, no `Timer` in the scene and a wired `TimerExample` prefab.
+- `TargetHitAndTimerTests.cs` (EditMode): hits with/without Rigidbody; Timer idle until started, countdown text, single expiry, stop/restart.
+- Play Mode probe (RF-04): from Zone A the target is shielded by the divider/`ZoneB_Lock`; after the door, a wide throw does not solve and the ball returns to its pedestal; a throw at the target solves it, the bridge rotates 90°, the lever and the bridge teleport area enable and a ray onto the east platform lands on `Top` instead of `EastLock`; selecting the lever with a Near-Far Interactor opens the final door (95°), shows `ExitPanel`, and rays reach the exit floor.
 - `CodeLockTests.cs`, `MenuToggleTests.cs` (EditMode): partial/wrong/correct order, retry, clear, input after solve, invalid code and digit; menu alternates, opens in front of the head at eye height, default binding on both menu buttons.
 - Play Mode probe (RF-03): before the door, rays into Zone B hit `ZoneB_Lock`; gem at the lock is rejected; key at the lock counts 1; wrong code clears and leaves the door shut; right code opens the door, removes the blocker and switches hints; after that a ray through the door lands on a Zone B floor; the rig's Near-Far Interactor selects keypad buttons; the menu button of each simulated controller alternates the menu. In the simulator, M opened the menu while the Editor had focus.
 - Play Mode (twice, stop and re-enter): simulator instantiated with simulated HMD and both controllers, rig stays at y = 0, no console errors. XRI logs one warning about haptic capabilities of the simulated controller; it is expected.
 
 ## Pending (needs a person)
+
+- RF-04 by hand in the simulator: climb the ladder (grip + pull down), teleport onto the platform, throw and miss, throw and hit, cross the bridge, pull the lever, teleport through the door under the bridge. On Quest: throw difficulty, climbing comfort, and teleporting through the 2 m door under the bridge.
+- Independent playtest (#20): another person completes the route without being told the solutions; record comprehension, retries and hint use.
+- Theme approval (#16): the Synty art and copy are not an approved theme yet.
 
 - Socket puzzle by hand in the simulator: grab, release and throw the ball and gem, place the gem, retry. Record how long another person takes to rebuild the wiring from the steps above (Discovery Inspector experiment).
 - Walk the room with the keyboard/mouse guide above and confirm move, snap turn, teleport and grab feel right.
