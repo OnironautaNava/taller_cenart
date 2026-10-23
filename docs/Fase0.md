@@ -98,9 +98,9 @@ Teleport and snap turn are the only locomotion: both controllers' `ControllerInp
 
 | Object (under `UI`) | Components | Role |
 |---|---|---|
-| `UI` | `MenuToggle` (Menu: `HintMenu`, Head: Main Camera, Distance 1.2) | Opens/closes the hint menu with the **menu button** of either controller (on Quest the left one; the right one is the system button). In the simulator press **M**. |
+| `UI` | `MenuToggle` (Menu: `HintMenu`, Head: Main Camera, Distance 1.2), `SceneMenu` | Opens/closes the hint menu with the **menu button** of either controller (on Quest the left one; the right one is the system button). In the simulator press **M**. |
 | `WelcomePanel` | world-space `Canvas`, `TrackedDeviceGraphicRaycaster` | Visible at the entry, 1.5 m in front of the start. `Comenzar` hides it; `Ver pista` opens the hint menu. |
-| `HintMenu` | world-space `Canvas`, `TrackedDeviceGraphicRaycaster`, starts off | Shows the current hint; opens in front of the player at eye height. `Cerrar` → `MenuToggle.Toggle`. |
+| `HintMenu` | world-space `Canvas`, `TrackedDeviceGraphicRaycaster`, starts off | Main menu: shows the current hint; opens in front of the player at eye height. `×` (top-right) → `MenuToggle.Toggle`; centered at the bottom, `Reiniciar` → `SceneMenu.RestartScene` (reloads the active scene by build index) and `Salir` → `SceneMenu.Quit` (stops Play Mode in the Editor). |
 | `HintMenu/Hint_Gem`, `Hint_Door`, `Hint_Gallery` | `TextMeshProUGUI` | One active at a time. |
 
 Hints follow progression with plain `GameObject.SetActive` calls: `Puzzle_01` On Solved turns `Hint_Gem` off and `Hint_Door` on; `Puzzle_Door` On Solved turns `Hint_Door` off and `Hint_Gallery` on; the third challenge continues the chain (see *Route* below). Press the UI buttons with the controller ray and trigger.

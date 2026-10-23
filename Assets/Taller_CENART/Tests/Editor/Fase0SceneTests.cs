@@ -227,6 +227,18 @@ public class Fase0SceneTests
     }
 
     [Test]
+    public void MenuRestartsSceneAndQuitsApp()
+    {
+        var ui = GameObject.Find("UI");
+        var sceneMenu = ui.GetComponent<SceneMenu>();
+        Assert.IsNotNull(sceneMenu);
+        var menu = ui.GetComponent<MenuToggle>().menu.transform;
+        AssertCalls(menu.Find("RestartButton").GetComponent<UnityEngine.UI.Button>().onClick, sceneMenu, nameof(SceneMenu.RestartScene));
+        AssertCalls(menu.Find("QuitButton").GetComponent<UnityEngine.UI.Button>().onClick, sceneMenu, nameof(SceneMenu.Quit));
+        Assert.AreEqual(0, EditorBuildSettings.scenes.ToList().FindIndex(s => s.path == ScenePath && s.enabled), "restart reloads by build index");
+    }
+
+    [Test]
     public void HintsFollowPuzzleProgression()
     {
         var menu = GameObject.Find("UI").GetComponent<MenuToggle>().menu.transform;

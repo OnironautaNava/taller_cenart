@@ -2,7 +2,7 @@
 
 ## Objetivo de la clase
 
-Que cada participante revise **rendimiento y confort**, compile el **APK**, lo instale y pruebe según disponibilidad del visor, y presente su cuarto. **No se agregan mecánicas obligatorias nuevas**: la clase es para pulir y entregar lo construido en las clases 1 a 4.
+Que cada participante revise **rendimiento y confort**, compile el **APK**, lo instale y pruebe según disponibilidad del visor, y presente su cuarto. **No se agregan mecánicas obligatorias nuevas**: la clase es para pulir y entregar lo construido en las clases 1 a 4. Además, una **introducción opcional de máximo 40 minutos** al flujo de trabajo con IA.
 
 ## Qué se revisa
 
@@ -51,6 +51,21 @@ Cada participante muestra en 3 a 5 minutos:
 - Su tema y cómo lo expresó en materiales, objetos y pistas.
 - Los tres retos y qué componentes usó para cada uno.
 - Una cosa que cambió después de probar en el visor o con otra persona.
+
+## Introducción al flujo de trabajo con IA (máximo 40 min)
+
+Bloque opcional: el curso se completa sin IA (el PRD deja las extensiones con IA como opcionales). Mensaje central: **la IA es una herramienta; la persona dirige, revisa y decide.**
+
+| Tiempo | Tema | Contenido |
+|---|---|---|
+| 0–5 min | ¿Qué es? | Diferencia entre un chat que responde y un agente que edita archivos del proyecto. Ejemplos: Unity AI, GitHub Copilot, Claude, ChatGPT. |
+| 5–15 min | El flujo | **Pedir → Revisar → Probar → Guardar.** Pedir con contexto (qué, en qué objeto y cómo se comprueba); revisar el cambio con `git diff`; probar en Play con la consola limpia; guardar con un commit claro. |
+| 15–30 min | Demo en vivo | Un cambio pequeño al cuarto, de la petición al commit. Sugerencia: que el teclado muestre un mensaje cuando el código es incorrecto (On Wrong de `CodeLock`). Revisar el diff en grupo, probar y hacer commit; si sale mal, descartar y volver al último commit. |
+| 30–40 min | Reglas y dudas | Sí: commit antes de pedir, pasos pequeños, pedir que explique, comprobar en Unity. No: aceptar sin leer, pedir todo de una vez, compartir contraseñas o datos personales, creer que si compila ya funciona. |
+
+- Conectar con la clase 1: git es la red de seguridad que hace seguro trabajar con IA.
+- Advertir que la IA puede inventar funciones, APIs o versiones con total seguridad; por eso se revisa y se prueba siempre.
+- Si el tiempo de la clase se recorta, este bloque es el primero que se acorta: la entrega en el visor tiene prioridad.
 
 ## Preguntas para la discusión
 
